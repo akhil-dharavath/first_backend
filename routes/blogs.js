@@ -12,7 +12,9 @@ const {
   unSubscribe,
   subscribe,
   openaiComment,
-  getTopStories
+  getTopStories,
+  suggestEvent,
+  getEvent
 } = require("../controllers/blogsController");
 const validateUser = require("../middlewares/validateUser");
 
@@ -25,5 +27,7 @@ router.put("/unsubscribe/:id", validateUser, unSubscribe);
 router.put("/subscribe/:id", validateUser, subscribe);
 router.post("/comment/openai-comment", openaiComment);
 router.get("/stories/:city", getTopStories);
+router.post("/search/event", suggestEvent);
+router.post("/get/event", getEvent);
 
 module.exports = router;

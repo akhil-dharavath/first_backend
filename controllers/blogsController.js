@@ -169,6 +169,59 @@ const getTopStories = async (req, res) => {
   }
 };
 
+const suggestEvent = async (req, res) => {
+  // console.log(req.body);
+  if (!req.body.city || !req.body.question) {
+    res.status(400).json({ message: "Please enter the requried fields" });
+    return;
+  }
+  const completion = await openai.chat.completions.create({
+    messages: [
+      {
+        role: "user",
+        content: `${
+          req.body.weather
+            ? `my location is ${req.body.city}, temparature is ${req.body.tempearature} and weather out now is ${req.body.weather}. ${req.body.question} related to my current location and time in just 60-70 words`
+            : `. ${req.body.question} in 60-70 words`
+        }`,
+      },
+    ],
+    model: "gpt-3.5-turbo",
+    max_tokens: 100,
+  });
+
+  // console.log(completion.choices[0].message.content);
+  res.status(200).json(completion.choices[0].message.content);
+};
+
+const getEvent = async (req, res) => {
+  if (!req.body.question) {
+    res.status(400).json({ message: "Trouble finding city" });
+    return;
+  }
+  try {
+    const api_key =
+      "bbd2ba13cb8a607530863bdf8016122e112fc6c7176510844902884a0e15ea84";
+    const response = await axios.get(
+      `https://serpapi.com/search.json?q=${req.body.question}&api_key=${api_key}`
+      // `https://serpapi.com/search.json?q=delhi&api_key=${api_key}`
+    );
+    // console.log(response);
+    if (response.data["events_results"]) {
+      res.status(200).json(response.data["events_results"]);
+      return;
+    } else if (response.data["organic_results"]) {
+      res.status(200).json(response.data["organic_results"]);
+      return;
+    } else {
+      res.status(200).json({ data: req.body.question });
+    }
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   getAllBlogs,
   getOneBlog,
@@ -179,4 +232,6 @@ module.exports = {
   subscribe,
   openaiComment,
   getTopStories,
+  suggestEvent,
+  getEvent,
 };
